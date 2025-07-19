@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aircraft Load & Trim Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+        }
+        
+        .header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 48px;
+            align-items: start;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .input-section {
+            padding: 32px;
+        }
+        
+        .results-section {
+            padding: 32px;
+            min-height: 500px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 28px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group:last-of-type {
+            margin-bottom: 32px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #495057;
+            box-shadow: 0 0 0 3px rgba(73, 80, 87, 0.1);
+        }
+        
+        select:hover, input:hover {
+            border-color: #6c757d;
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            letter-spacing: 0.025em;
+        }
+        
+        .calculate-btn:hover {
+            background: #34495e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+        }
+        
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .results-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            border: 1px solid #e9ecef;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        
+        th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        td {
+            color: #495057;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .total-row {
+            background: #f8f9fa !important;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .total-row td {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .cg-result {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #e9ecef;
+            text-align: center;
+            padding: 24px 20px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cg-result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2c3e50, #34495e);
+        }
+        
+        .cg-result .result-label {
+            color: #6c757d;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .cg-result .cg-value {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #6c757d;
+            padding: 80px 24px;
+        }
+        
+        .no-results h3 {
+            font-size: 1.25rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .no-results p {
+            font-size: 1rem;
+            margin: 0;
+        }
+        
+        .aircraft-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .aircraft-info h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .aircraft-info p {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+            
+            .container {
+                padding: 32px 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .input-section,
+            .results-section {
+                padding: 24px;
+            }
+            
+            .main-content {
+                gap: 24px;
+            }
+            
+            /* Make table responsive on mobile */
+            .results-table {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 500px;
+            }
+            
+            th, td {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+                white-space: nowrap;
+            }
+            
+            th {
+                font-size: 0.8rem;
+            }
+            
+            /* Smaller CG result box on mobile */
+            .cg-result {
+                padding: 20px 16px;
+            }
+            
+            .cg-result .result-label {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .cg-result .cg-value {
+                font-size: 1.6rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .input-section,
+            .results-section {
+                padding: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            select, input {
+                padding: 10px 14px;
+                font-size: 0.95rem;
+            }
+            
+            .calculate-btn {
+                padding: 14px;
+                font-size: 0.95rem;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+            
+            th {
+                font-size: 0.75rem;
+            }
+            
+            .cg-result {
+                padding: 18px 14px;
+            }
+            
+            .cg-result .result-label {
+                font-size: 0.75rem;
+            }
+            
+            .cg-result .cg-value {
+                font-size: 1.4rem;
+            }
+            
+            .no-results {
+                padding: 60px 20px;
+            }
+            
+            .no-results h3 {
+                font-size: 1.1rem;
+            }
+            
+            .no-results p {
+                font-size: 0.95rem;
+            }
+        }
+        
+        /* Smooth transitions for all interactive elements */
+        * {
+            transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+        }
+        
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Aircraft Load & Trim Calculator</h1>
+            <p>Calculate load distribution and center of gravity</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <div class="input-section">
+                    <h2 class="section-title">Flight Parameters</h2>
+                    
+                    <div class="form-group">
+                        <label for="aircraft">Select Aircraft</label>
+                        <select id="aircraft" onchange="updateAircraftInfo()">
+                            <option value="">Choose an aircraft...</option>
+                            <optgroup label="P2008JC">
+                                <option value="vt-rbd" data-weight="435.2" data-arm="1.856">VT-RBD</option>
+                                <option value="vt-rbf" data-weight="421.7" data-arm="1.877">VT-RBF</option>
+                                <option value="vt-rbh" data-weight="426.95" data-arm="1.844">VT-RBH</option>
+                                <option value="vt-rbi" data-weight="428.45" data-arm="1.839">VT-RBI</option>
+                                <option value="vt-rbj" data-weight="427.45" data-arm="1.84">VT-RBJ</option>
+                                <option value="vt-rbv" data-weight="431.45" data-arm="1.84">VT-RBV</option>
+                                <option value="vt-rbr" data-weight="432.45" data-arm="1.892">VT-RBR</option>
+                                <option value="vt-rbz" data-weight="431.45" data-arm="1.892">VT-RBZ</option>
+                                <option value="vt-rfg" data-weight="431.45" data-arm="1.892">VT-RFG</option>
+                                <option value="vt-rib" data-weight="433.45" data-arm="1.85">VT-RIB</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div id="aircraftInfo" class="aircraft-info" style="display: none;">
+                        <h4 id="aircraftName"></h4>
+                        <p>Aircraft Weight & Arm</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pilot1">Pilot 1 Weight (kg)</label>
+                        <input type="number" id="pilot1" placeholder="Enter pilot 1 weight" min="0" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pilot2">Pilot 2 Weight (kg)</label>
+                        <input type="number" id="pilot2" placeholder="Enter pilot 2 weight" min="0" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fuel">Fuel (liters)</label>
+                        <input type="number" id="fuel" placeholder="Enter fuel in liters" min="0" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="baggage">Baggage Weight (kg)</label>
+                        <input type="number" id="baggage" placeholder="Enter baggage weight" min="0" step="0.1">
+                    </div>
+                    
+                    <button class="calculate-btn" onclick="calculateBalance()">Calculate Load & Trim</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="results-section">
+                    <h2 class="section-title">Results</h2>
+                    
+                    <div id="results" style="display: none;">
+                        <div class="results-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Weight (kg)</th>
+                                        <th>Arm (m)</th>
+                                        <th>Moment (kg⋅m)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody">
+                                    <!-- Results will be populated here -->
+                                </tbody>
+                                <tfoot>
+                                    <tr class="total-row">
+                                        <td><strong>TOTAL</strong></td>
+                                        <td><strong id="totalWeightTable">0</strong></td>
+                                        <td>-</td>
+                                        <td><strong id="totalMomentTable">0</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="cg-result">
+                            <div class="result-label">Center of Gravity</div>
+                            <div class="cg-value" id="centerGravity">0.00 m</div>
+                        </div>
+                    </div>
+                    
+                    <div id="noResults" class="no-results">
+                        <h3>Ready to Calculate</h3>
+                        <p>Enter flight parameters to see load and trim results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PILOT_ARM = 1.8; // meters
+        const FUEL_ARM = 2.209; // meters
+        const BAGGAGE_ARM = 2.417; // meters
+        const FUEL_DENSITY = 0.72; // kg/liter
+        
+        let aircraftData = {};
+        
+        function updateAircraftInfo() {
+            const select = document.getElementById('aircraft');
+            const selectedOption = select.options[select.selectedIndex];
+            const aircraftInfo = document.getElementById('aircraftInfo');
+            
+            if (selectedOption.value) {
+                aircraftData = {
+                    name: selectedOption.text,
+                    emptyWeight: parseFloat(selectedOption.dataset.weight),
+                    emptyArm: parseFloat(selectedOption.dataset.arm)
+                };
+                
+                document.getElementById('aircraftName').textContent = aircraftData.name;
+                document.getElementById('aircraftWeight').textContent = aircraftData.emptyWeight;
+                document.getElementById('aircraftArm').textContent = aircraftData.emptyArm;
+                aircraftInfo.style.display = 'block';
+            } else {
+                aircraftInfo.style.display = 'none';
+                aircraftData = {};
+            }
+        }
+        
+        function calculateBalance() {
+            // Get input values
+            const pilot1Weight = parseFloat(document.getElementById('pilot1').value) || 0;
+            const pilot2Weight = parseFloat(document.getElementById('pilot2').value) || 0;
+            const fuelLiters = parseFloat(document.getElementById('fuel').value) || 0;
+            const baggageWeight = parseFloat(document.getElementById('baggage').value) || 0;
+            
+            // Check if aircraft is selected
+            if (!aircraftData.emptyWeight) {
+                alert('Please select an aircraft first');
+                return;
+            }
+            
+            // Calculate fuel weight in kg
+            const fuelWeight = fuelLiters * FUEL_DENSITY;
+            
+            // Calculate moments
+            const emptyMoment = aircraftData.emptyWeight * aircraftData.emptyArm;
+            const pilot1Moment = pilot1Weight * PILOT_ARM;
+            const pilot2Moment = pilot2Weight * PILOT_ARM;
+            const fuelMoment = fuelWeight * FUEL_ARM;
+            const baggageMoment = baggageWeight * BAGGAGE_ARM;
+            
+            // Calculate totals
+            const totalWeight = aircraftData.emptyWeight + pilot1Weight + pilot2Weight + fuelWeight + baggageWeight;
+            const totalMoment = emptyMoment + pilot1Moment + pilot2Moment + fuelMoment + baggageMoment;
+            
+            // Calculate center of gravity
+            const centerOfGravity = totalWeight > 0 ? totalMoment / totalWeight : 0;
+            
+            // Display results in table
+            const tableBody = document.getElementById('resultsTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td>Empty Aircraft</td>
+                    <td>${aircraftData.emptyWeight.toFixed(2)}</td>
+                    <td>${aircraftData.emptyArm.toFixed(3)}</td>
+                    <td>${emptyMoment.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Pilot 1</td>
+                    <td>${pilot1Weight.toFixed(2)}</td>
+                    <td>${PILOT_ARM.toFixed(3)}</td>
+                    <td>${pilot1Moment.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Pilot 2</td>
+                    <td>${pilot2Weight.toFixed(2)}</td>
+                    <td>${PILOT_ARM.toFixed(3)}</td>
+                    <td>${pilot2Moment.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Fuel</td>
+                    <td>${fuelWeight.toFixed(2)}</td>
+                    <td>${FUEL_ARM.toFixed(3)}</td>
+                    <td>${fuelMoment.toFixed(4)}</td>
+                </tr>
+                <tr>
+                    <td>Baggage</td>
+                    <td>${baggageWeight.toFixed(2)}</td>
+                    <td>${BAGGAGE_ARM.toFixed(3)}</td>
+                    <td>${baggageMoment.toFixed(4)}</td>
+                </tr>
+            `;
+            
+            document.getElementById('totalWeightTable').textContent = totalWeight.toFixed(1);
+            document.getElementById('totalMomentTable').textContent = totalMoment.toFixed(4);
+            document.getElementById('centerGravity').textContent = centerOfGravity.toFixed(3) + ' m';
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+        }
+        
+        // Add enter key support for inputs
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateBalance();
+            }
+        });
+    </script>
+</body>
+</html>
